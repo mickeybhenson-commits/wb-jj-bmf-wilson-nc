@@ -1,0 +1,31 @@
+{
+  "project_name": "J&J LMDS",
+  "location": "Wilson, NC",
+  "last_updated": "2026-01-02 17:00 EST",
+  "swppp": {
+    "risk": "LOW",
+    "rain_24h": 0.06,
+    "stability_index": 0.42,
+    "neuse_buffer_check": "Compliant",
+    "notes": "Rainfall below 0.5 inch threshold. No discharge detected in Contentnea Creek."
+  },
+  "concrete": {
+    "status": "CAUTION",
+    "temp_low": 34,
+    "humidity": 48,
+    "blankets_required": true,
+    "notes": "Daytime window good. Overnight temps near freezing; protect late pours."
+  },
+  "grading": {
+    "status": "OPTIMAL",
+    "trafficability": "Good",
+    "compaction_potential": "High",
+    "dust_control": "Not Required"
+  },
+  "crane": {
+    "wind_speed": 9,
+    "max_gust": 14,
+    "status": "GO",
+    "notes": "Winds stable. No high-wind alerts for the Wilson coastal plain."
+  }
+}
