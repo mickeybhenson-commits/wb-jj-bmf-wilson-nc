@@ -3,13 +3,12 @@ import json
 import pandas as pd
 import datetime as dt
 from pathlib import Path
-# This will now work once you add requirements.txt
 from streamlit_autorefresh import st_autorefresh 
 
-# --- 1. ARCHITECTURAL CONFIG & STYLING ---
+# --- 1. COMMAND CONFIG & PREMIUM STYLING ---
 st.set_page_config(page_title="Wayne Brothers | Executive Command", layout="wide")
 
-# Automated 5-minute refresh cycle
+# Automated 5-minute sync (300,000 ms)
 st_autorefresh(interval=300000, key="datarefresh")
 
 def apply_industrial_premium_styling():
@@ -18,37 +17,19 @@ def apply_industrial_premium_styling():
         f"""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        .stApp {{ 
-            background-image: url("{bg_url}"); 
-            background-attachment: fixed; 
-            background-size: cover; 
-            font-family: 'Inter', sans-serif; 
-        }}
-        .stApp:before {{ 
-            content: ""; position: fixed; inset: 0; 
-            background: radial-gradient(circle at center, rgba(0,0,0,0.85), rgba(0,0,0,0.98)); 
-            z-index: 0; 
-        }}
+        .stApp {{ background-image: url("{bg_url}"); background-attachment: fixed; background-size: cover; font-family: 'Inter', sans-serif; }}
+        .stApp:before {{ content: ""; position: fixed; inset: 0; background: radial-gradient(circle at center, rgba(0,0,0,0.85), rgba(0,0,0,0.95)); z-index: 0; }}
         section.main {{ position: relative; z-index: 1; }}
 
         .exec-header {{ margin-bottom: 30px; border-left: 8px solid #CC0000; padding-left: 25px; }}
-        .exec-title {{ font-size: 3.2em; font-weight: 900; letter-spacing: -2px; line-height: 1; color: #FFFFFF; margin: 0; }}
+        .exec-title {{ font-size: 3.5em; font-weight: 900; letter-spacing: -2px; line-height: 1; color: #FFFFFF; margin: 0; }}
         .exec-subtitle {{ font-size: 1.4em; color: #AAAAAA; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px; }}
 
-        .report-section {{ 
-            background: rgba(20, 20, 25, 0.85); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 8px; padding: 25px; margin-bottom: 25px; 
-        }}
-        .directive-header {{ color: #CC0000; font-weight: 900; text-transform: uppercase; font-size: 0.9em; margin-bottom: 15px; }}
+        .report-section {{ background: rgba(20, 20, 25, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 25px; margin-bottom: 25px; }}
+        .directive-header {{ color: #CC0000; font-weight: 900; text-transform: uppercase; font-size: 0.8em; margin-bottom: 10px; }}
         
-        /* High-Impact Action Cards */
-        .risk-item {{ 
-            border-left: 4px solid #CC0000; 
-            padding: 15px; 
-            margin-bottom: 15px; 
-            background: rgba(204, 0, 0, 0.1); 
-        }}
+        .risk-item {{ border-left: 5px solid #CC0000; padding: 15px; margin-bottom: 15px; background: rgba(204, 0, 0, 0.1); font-weight: 600; color: #FFD6D6; }}
+        .optimal-item {{ border-left: 5px solid #0B8A1D; padding: 15px; margin-bottom: 15px; background: rgba(11, 138, 29, 0.1); font-weight: 600; color: #D6FFD6; }}
         </style>
         """, unsafe_allow_html=True)
 
@@ -70,16 +51,24 @@ def load_digital_twin():
 site_data, api_val = load_digital_twin()
 
 # --- 3. ANALYTICAL LOGIC ---
+# Soil Workability Logic
 if api_val < 0.30:
-    status, color, grading_rec = "OPTIMAL", "#0B8A1D", "Full grading operations authorized. Soil stability is high."
+    status, color, grading_rec = "OPTIMAL", "#0B8A1D", "Soil stability is high. Unrestricted grading authorized."
 elif api_val < 0.60:
-    status, color, grading_rec = "SATURATED", "#FFAA00", "Limit heavy hauling to stabilized roads to prevent subgrade damage."
+    status, color, grading_rec = "SATURATED", "#FFAA00", "Limit heavy equipment to stabilized roads."
 elif api_val < 0.85:
-    status, color, grading_rec = "CRITICAL", "#FF6600", "Restrict mass grading to protect soil integrity."
+    status, color, grading_rec = "CRITICAL", "#FF6600", "High rutting risk. Restrict mass grading."
 else:
-    status, color, grading_rec = "RESTRICTED", "#B00000", "SITE CLOSED TO GRADING. Earthwork operations suspended to defend soil structure."
+    status, color, grading_rec = "RESTRICTED", "#B00000", "SITE CLOSED TO GRADING."
 
-# --- 4. EXECUTIVE INTERFACE ---
+# Sediment Level Thresholds
+# Note: Dashboard current state shows 25% sediment level
+sediment_pct = site_data.get('swppp', {}).get('sb3_sediment_pct', 25) 
+forecast_rain = site_data.get('precipitation', {}).get('forecast_prob', 0)
+
+# --- 4. EXECUTIVE COMMAND INTERFACE ---
+
+# Header block
 st.markdown(f"""
     <div class="exec-header">
         <div class="exec-title">Wayne Brothers</div>
@@ -88,49 +77,57 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-col_l, col_r = st.columns([2, 1])
+col_main, col_metrics = st.columns([2, 1])
 
-with col_l:
-    # Daily Morning Directive
+with col_main:
+    # A. PRIMARY FIELD DIRECTIVE
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Field Operational Directive</div>', unsafe_allow_html=True)
     st.markdown(f"<h1 style='color:{color}; margin:0;'>STATUS: {status}</h1>", unsafe_allow_html=True)
     st.write(f"**Action:** {grading_rec}")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Heads-Up Storm Advisory
+    # B. MAINTENANCE ADVISORY
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
-    st.markdown('<div class="directive-header">Predictive Future Impact Advisory (Heads-Up)</div>', unsafe_allow_html=True)
-    forecast_rain = site_data.get('precipitation', {}).get('forecast_prob', 0)
-    if forecast_rain > 50:
+    st.markdown('<div class="directive-header">Executive Advisory: Storm Prep & Infrastructure</div>', unsafe_allow_html=True)
+    
+    if status == "OPTIMAL" and sediment_pct >= 25:
         st.markdown(f"""
-            <div class="risk-item"><strong>STORM IMPACT:</strong> Incoming rain on saturated soil ({api_val}) will likely maintain RESTRICTED status for 48-72h.</div>
-            <div class="risk-item"><strong>SWPPP ALERT:</strong> Basin SB3 risk of overtopping. Proactive pump-out recommended to maintain freeboard.</div>
+            <div class="optimal-item">
+                COMMAND DIRECTIVE: Current Soil Status is OPTIMAL. Execute clean-out of Basin SB3 immediately 
+                to restore hydraulic capacity while conditions are dry. Emptying sediment now reset the 
+                legal limit buffer before the next storm event.
+            </div>
         """, unsafe_allow_html=True)
-    else:
-        st.success("Stable weather window confirmed. No immediate operational impediments forecast.")
+    elif sediment_pct >= 50:
+        st.markdown(f'<div class="risk-item">🚨 LEGAL CRITICAL: Basin SB3 sediment at {sediment_pct}%. Immediate clean-out required per NCDENR standards.</div>', unsafe_allow_html=True)
+
+    if forecast_rain > 50:
+        st.markdown(f'<div class="risk-item">STORM HEADS-UP: {forecast_rain}% Precip Probability. Ensure silt fence integrity on East Perimeter low points.</div>', unsafe_allow_html=True)
+    elif not sediment_alert and forecast_rain <= 50:
+        st.success("No immediate operational impediments forecast for the 48-hour window.")
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Improved Radar Surveillance
-    st.markdown("### Predictive Radar Surveillance")
+    # C. RADAR SURVEILLANCE
     st.components.v1.html(f"""
         <iframe width="100%" height="450" 
             src="https://embed.windy.com/embed2.html?lat=35.726&lon=-77.916&zoom=9&level=surface&overlay=radar" 
             frameborder="0" style="border-radius:8px;"></iframe>
     """, height=460)
 
-with col_r:
-    # Real-Time Operational Metrics
+with col_metrics:
+    # D. OPERATIONAL METRICS
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
-    st.markdown('<div class="directive-header">Operational Metrics</div>', unsafe_allow_html=True)
+    st.markdown('<div class="directive-header">Real-Time Metrics</div>', unsafe_allow_html=True)
     st.metric("Soil Moisture (API)", api_val)
-    st.metric("Basin SB3 Capacity", f"{site_data.get('swppp', {}).get('sb3_capacity_pct', 0)}%")
-    st.metric("Last Data Sync", dt.datetime.now().strftime("%H:%M:%S"))
+    st.metric("Basin SB3 Capacity", f"{site_data.get('swppp', {}).get('sb3_capacity_pct', 58)}%")
+    st.metric("Sediment Level", f"{sediment_pct}%")
+    st.caption(f"Last Sync: {dt.datetime.now().strftime('%H:%M:%S')}")
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
-    st.markdown('<div class="directive-header">Infrastructure Analysis</div>', unsafe_allow_html=True)
-    st.write(f"**Disturbed Acres:** {site_data.get('swppp', {}).get('disturbed_acres', 148.2)}")
-    st.write(f"**Basin SB3 Freeboard:** {site_data.get('swppp', {}).get('freeboard_feet', 1.5)} FT")
-    st.write(f"**Satellite Observation:** Basin SB3 skimmer functioning; perimeter silt fence integrity confirmed.")
+    st.markdown('<div class="directive-header">Compliance Detail</div>', unsafe_allow_html=True)
+    st.write(f"**Project Area:** 148.2 Disturbed Acres")
+    st.write(f"**Freeboard:** {site_data.get('swppp', {}).get('freeboard_feet', 1.5)} FT")
+    st.write(f"**Satellite Observation:** Basin skimmer functioning; perimeter silt fence integrity confirmed.")
     st.markdown("</div>", unsafe_allow_html=True)
