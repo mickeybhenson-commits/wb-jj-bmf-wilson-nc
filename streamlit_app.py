@@ -7,7 +7,7 @@ from pathlib import Path
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="Wayne Brothers : Johnson & Johnson (J&J) Biologics Manufacturing Facility in Wilson, NC",
+    page_title="Wayne Brothers - J&J Wilson NC",
     page_icon="🏗️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -368,7 +368,7 @@ def main():
     col_title, col_status = st.columns([3, 1])
     
     with col_title:
-        st.title(f"{site_data['project_name']}")
+        st.title("Wayne Brothers : Johnson & Johnson (J&J) Biologics Manufacturing Facility in Wilson, NC")
         st.caption(f"Last Updated: {site_data['last_updated']} | API: {round(api, 3)}")
     
     with col_status:
@@ -396,34 +396,18 @@ def main():
     with tab_weather:
         st.header("Meteorological Intelligence")
         
-        # Live radar section with Windy.com embeds (animated and reliable)
-        st.subheader("Live Radar Surveillance")
+        # Single centered radar with continuous loop
+        st.subheader("Live Radar - Wilson, NC")
         
-        radar_col1, radar_col2 = st.columns(2)
-        
-        with radar_col1:
-            st.markdown("**Local Radar - Wilson, NC**")
-            # Windy.com embed for Wilson, NC (35.726, -77.916) with radar layer
-            windy_local = """
-            <div class="radar-container">
-                <iframe width="100%" height="450" 
-                src="https://embed.windy.com/embed2.html?lat=35.726&lon=-77.916&detailLat=35.726&detailLon=-77.916&width=650&height=450&zoom=8&level=surface&overlay=radar&product=ecmwf&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1" 
-                frameborder="0"></iframe>
-            </div>
-            """
-            st.components.v1.html(windy_local, height=480)
-        
-        with radar_col2:
-            st.markdown("**Regional View - Mid-Atlantic**")
-            # Wider view of Mid-Atlantic region
-            windy_regional = """
-            <div class="radar-container">
-                <iframe width="100%" height="450" 
-                src="https://embed.windy.com/embed2.html?lat=36.5&lon=-79.0&detailLat=36.5&detailLon=-79.0&width=650&height=450&zoom=6&level=surface&overlay=radar&product=ecmwf&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1" 
-                frameborder="0"></iframe>
-            </div>
-            """
-            st.components.v1.html(windy_regional, height=480)
+        # Centered Windy.com radar embed for Wilson, NC (35.726, -77.916)
+        windy_radar = """
+        <div class="radar-container" style="display: flex; justify-content: center;">
+            <iframe width="100%" height="600" 
+            src="https://embed.windy.com/embed2.html?lat=35.726&lon=-77.916&detailLat=35.726&detailLon=-77.916&width=1000&height=600&zoom=9&level=surface&overlay=radar&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1" 
+            frameborder="0"></iframe>
+        </div>
+        """
+        st.components.v1.html(windy_radar, height=620)
         
         st.markdown("---")
         
