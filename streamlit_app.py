@@ -22,14 +22,14 @@ def add_professional_design():
             content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
+            background-color: rgba(0, 0, 0, 0.88);
             z-index: -1;
          }}
          .stMetric {{
-            background-color: rgba(25, 25, 25, 0.95);
+            background-color: rgba(20, 20, 20, 0.95);
             padding: 15px;
-            border-radius: 2px;
-            border-left: 5px solid #444;
+            border-radius: 4px;
+            border-left: 4px solid #555;
          }}
          </style>
          """,
@@ -38,26 +38,35 @@ def add_professional_design():
 
 add_professional_design()
 
-# --- 2. DATA ACQUISITION & ANALYSIS ---
+# --- 2. DATA ACQUISITION (FIXES NAMEERROR) ---
 def load_project_data():
     site_json, history_df, api_val = None, None, 0.0
+    
+    # Load Current Snapshot
     if os.path.exists('data/site_status.json'):
         with open('data/site_status.json', 'r') as f:
             site_json = json.load(f)
+            
+    # Load Historical Ledger and Calculate API
     if os.path.exists('data/history.csv'):
         history_df = pd.read_csv('data/history.csv')
-        # Calculate 5-Day Soil Saturation Index (API)
         k = 0.85
         temp_api = 0
+        # Calculate 5-Day Soil Saturation Index
         for rain in history_df.tail(5)['precip_actual']:
             temp_api = (temp_api * k) + float(rain)
         api_val = temp_api
+        
     return site_json, history_df, api_val
 
+# Variables are assigned here BEFORE being used in logic
 site_data, history, api = load_project_data()
 
-# --- 3. WORKABILITY LOGIC ---
-# Standardizing color-coded status for site operations
+if not site_data:
+    st.error("SYSTEM STATUS: Waiting for Data Sync...")
+    st.stop()
+
+# --- 3. CONTRACTOR DEFENSE LOGIC ---
 if api < 0.30:
     work_status, work_color = "OPTIMAL", "green"
 elif api < 0.60:
@@ -77,28 +86,24 @@ tab_weather, tab_grading, tab_swppp, tab_crane = st.tabs(["Weather", "Grading", 
 with tab_weather:
     st.header("METEOROLOGICAL INTELLIGENCE")
     
-    # TRIPLE RADAR INTERFACE
+    # DYNAMIC RADAR INTERFACE (FIXES 404 ERRORS)
     st.subheader("Live Radar Surveillance")
     r1, r2, r3 = st.columns(3)
     
     with r1:
         st.write("**Local Radar (Wilson Sector)**")
-        # Embedding local NWS radar view
-        st.markdown('<iframe src="https://radar.weather.gov/ridge/standard/KRAX_0.png" width="100%" height="300" style="border:none;"></iframe>', unsafe_allow_html=True)
+        # Embedding live interactive NWS radar for Wilson, NC
+        st.components.v1.iframe("https://radar.weather.gov/?settings=v1_eyJhZ2VudCI6InN0cmVhbWxpdCIsImJhc2UiOiJzdGFuZGFyZCIsImNvdW50eSI6IjEiLCJjdW11bGF0aXZlIjoiMCIsImxhdCI6MzUuNzI2LCJsb24iOi03Ny45MTYsInByb2R1Y3QiOiJOUVciLCJzdYXRlIjoiMSIsInRpbWVfcmF0ZSI6IjEiLCJ2aWV3IjoibG9jYWwiLCJ6b29tIjoiOCJ9", height=400)
     
     with r2:
         st.write("**Regional Radar (Mid-Atlantic)**")
-        # Embedding regional NWS radar view
-        st.markdown('<iframe src="https://radar.weather.gov/ridge/standard/SOUTH_ATLANTIC_0.png" width="100%" height="300" style="border:none;"></iframe>', unsafe_allow_html=True)
+        st.components.v1.iframe("https://radar.weather.gov/?settings=v1_eyJhZ2VudCI6InN0cmVhbWxpdCIsImJhc2UiOiJzdGFuZGFyZCIsImNvdW50eSI6IjEiLCJjdW11bGF0aXZlIjoiMCIsImxhdCI6MzcuNTQwLCJsb24iOi03Ny40MzYsInByb2R1Y3QiOiJOUVciLCJzdYXRlIjoiMSIsInRpbWVfcmF0ZSI6IjEiLCJ2aWV3IjoicmVnaW9uYWwiLCJ6b29tIjoiNSJ9", height=400)
         
     with r3:
         st.write("**National Radar (CONUS)**")
-        # Embedding national NWS radar view
-        st.markdown('<iframe src="https://radar.weather.gov/ridge/standard/CONUS_0.png" width="100%" height="300" style="border:none;"></iframe>', unsafe_allow_html=True)
+        st.components.v1.iframe("https://radar.weather.gov/", height=400)
 
     st.markdown("---")
-    
-    # Precipitation & Lightning Data
     col_w1, col_w2 = st.columns(2)
     with col_w1:
         st.subheader("Precipitation Data")
@@ -115,7 +120,6 @@ with tab_weather:
 
 with tab_grading:
     st.header("GRADING OPERATIONS & SOIL WORKABILITY")
-    # Color-coded soil moisture status
     st.markdown(f"### CURRENT WORKABILITY: :{work_color}[{work_status}]")
     st.metric("Soil Saturation Index", f"{round(api, 2)}", delta=work_status, delta_color="inverse")
     st.info("Status reflects the 5-day Antecedent Precipitation Index (API) for the 148.2 disturbed acres.")
@@ -129,24 +133,27 @@ with tab_swppp:
         st.write(f"**Available Freeboard:** {site_data['swppp']['freeboard_feet']} FT")
         st.progress(site_data['swppp']['sb3_capacity_pct'] / 100)
     with col_s2:
-        st.subheader("Perimeter Controls")
+        st.subheader("Perimeter Integrity")
         st.write(f"**Disturbed Acreage:** {site_data['swppp']['disturbed_acres']} AC")
         st.write(f"**Silt Fence Status:** {site_data['swppp']['silt_fence_integrity']}")
+        st.write("**Location:** Basin SB3 is located at the NW property low point.")
 
 with tab_crane:
     st.header("CRANE & LIFT OPERATIONS SAFETY")
-    cc1, cc2 = st.columns(2)
+    cc1, cc2, cc3 = st.columns(3)
     with cc1:
         st.metric("Wind Speed", f"{site_data['crane_safety']['wind_speed']} MPH")
         st.metric("Max Gusts", f"{site_data['crane_safety']['max_gust']} MPH")
     with cc2:
-        st.write(f"**Crane Safety Status:** {site_data['crane_safety']['status']}")
+        st.write(f"**Safety Status:** {site_data['crane_safety']['status']}")
         st.write(f"**Lightning Threat:** {site_data['lightning']['forecast']}")
-        st.write(f"**Soil Bearing Stability:** {work_status}")
+    with cc3:
+        st.write(f"**Soil Workability:** {work_status}")
+        st.write(f"**Soil Saturation Index:** {round(api, 2)}")
     
     if site_data['crane_safety']['max_gust'] > 25:
-        st.error("WIND ALARM: Peak gusts exceed 25 MPH. Engineering safety protocols in effect.")
+        st.error("WIND ALARM: Peak gusts exceed 25 MPH. Engineering review required for lift operations.")
 
-# --- 6. SYSTEM ADMIN (SIDEBAR) ---
+# --- 6. SYSTEM ADMINISTRATION (SIDEBAR ONLY) ---
 with st.sidebar.expander("SYSTEM ADMINISTRATION"):
     st.json(site_data)
