@@ -2,14 +2,13 @@ import streamlit as st
 import json
 import pandas as pd
 import datetime as dt
-import time
 from pathlib import Path
 from streamlit_autorefresh import st_autorefresh 
 
 # --- 1. ARCHITECTURAL CONFIG & CSS ---
 st.set_page_config(page_title="Wayne Brothers | Universal Command", layout="wide")
 
-# 5-Minute Professional Sync (300,000 ms)
+# 5-Minute Professional Sync
 st_autorefresh(interval=300000, key="datarefresh")
 
 def apply_universal_command_styling():
@@ -23,9 +22,9 @@ def apply_universal_command_styling():
         section.main {{ position: relative; z-index: 1; }}
         .exec-header {{ margin-bottom: 30px; border-left: 10px solid #CC0000; padding-left: 25px; }}
         .exec-title {{ font-size: 3.8em; font-weight: 900; letter-spacing: -2px; line-height: 1; color: #FFFFFF; margin: 0; }}
+        .sync-badge {{ background: rgba(255, 255, 255, 0.1); color: #00FFCC; padding: 5px 12px; border-radius: 50px; font-size: 0.8em; font-weight: 700; border: 1px solid #00FFCC; }}
         .report-section {{ background: rgba(15, 15, 20, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 25px; margin-bottom: 20px; }}
         .directive-header {{ color: #CC0000; font-weight: 900; text-transform: uppercase; font-size: 0.85em; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }}
-        .sync-badge {{ background: rgba(255, 255, 255, 0.1); color: #00FFCC; padding: 5px 12px; border-radius: 50px; font-size: 0.8em; font-weight: 700; border: 1px solid #00FFCC; }}
         .alert-box {{ border-left: 5px solid #CC0000; padding: 15px; margin-bottom: 15px; background: rgba(204, 0, 0, 0.1); font-weight: 600; color: #FFD6D6; }}
         </style>
         """, unsafe_allow_html=True)
@@ -50,7 +49,8 @@ site_data, api_val, history_log = load_site_data()
 
 # --- 3. LOGIC LAYER ---
 sed_pct = site_data.get('swppp', {}).get('sb3_sediment_pct', 25) 
-wind = site_data.get('crane_safety', {}).get('max_gust', 0)
+wind_speed = site_data.get('crane_safety', {}).get('max_gust', 0)
+wind_dir = site_data.get('crane_safety', {}).get('wind_direction', "N/A") # New Direction Data
 light = site_data.get('lightning', {}).get('recent_strikes_50mi', 0)
 last_sync_time = dt.datetime.now().strftime('%H:%M:%S')
 
@@ -76,26 +76,29 @@ with c_main:
     # 1. FIELD OPERATIONAL DIRECTIVE
     st.markdown(f'<div class="report-section" style="border-top: 6px solid {s_color};"><div class="directive-header">Field Operational Directive</div><h1 style="color:{s_color}; margin:0; font-size:3.5em;">{status}</h1><p style="font-size:1.3em;">{s_msg}</p></div>', unsafe_allow_html=True)
 
-    # 2. EXECUTIVE ADVISORY (LOCKED FEATURES)
+    # 2. EXECUTIVE ADVISORY
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Executive Advisory: Safety & Maintenance</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="alert-box" style="border-color:#FFAA00;">⚠️ EROSION CONTROL: Monitoring stress at East Perimeter low points.</div>', unsafe_allow_html=True)
-    if light > 0: st.markdown(f'<div class="alert-box" style="border-color:#FFAA00;">⚡ LIGHTNING: {light} strikes within 50 miles.</div>', unsafe_allow_html=True)
-    if wind > 25: st.markdown(f'<div class="alert-box">🚨 CRANE ALERT: Gusts {wind} MPH. STOP LIFTS.</div>', unsafe_allow_html=True)
-    if sed_pct >= 25: st.markdown(f'<div style="border-left:5px solid #0B8A1D; padding:15px; background:rgba(11,138,29,0.1); color:#D6FFD6; font-weight:600;">CMD DIRECTIVE: Basin SB3 at {sed_pct}% sediment. Status is {status}. Empty basin immediately while dry.</div>', unsafe_allow_html=True)
+    
+    # Silt Fence Warning (Directional Awareness)
+    st.markdown(f'<div class="alert-box" style="border-color:#FFAA00;">⚠️ EROSION CONTROL: Monitoring stress at East Perimeter. Current wind from {wind_dir} increasing wave action risk on saturated embankments.</div>', unsafe_allow_html=True)
+    
+    if light > 0: st.markdown(f'<div class="alert-box" style="border-color:#FFAA00;">⚡ LIGHTNING: {light} strikes detected within 50 miles.</div>', unsafe_allow_html=True)
+    if wind_speed > 25: st.markdown(f'<div class="alert-box">🚨 CRANE ALERT: Gusts {wind_speed} MPH from {wind_dir}. STOP LIFTS.</div>', unsafe_allow_html=True)
+    if sed_pct >= 25: st.markdown(f'<div style="border-left:5px solid #0B8A1D; padding:15px; background:rgba(11,138,29,0.1); color:#D6FFD6; font-weight:600;">CMD DIRECTIVE: Basin SB3 at {sed_pct}% sediment. Status is {status}. Empty basin immediately.</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # 3. CONTINUOUS LOOP RADAR
     st.components.v1.html(f"""<iframe width="100%" height="450" src="https://embed.windy.com/embed2.html?lat=35.726&lon=-77.916&zoom=9&level=surface&overlay=radar&product=radar&calendar=now" frameborder="0" style="border-radius:8px;"></iframe>""", height=460)
 
 with c_metrics:
-    # 4. SITE ANALYTICS (REAL-TIME)
+    # 4. ANALYTICAL METRICS
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Analytical Metrics</div>', unsafe_allow_html=True)
     st.metric("Soil Moisture (API)", api_val)
     st.metric("Basin SB3 Capacity", f"{site_data.get('swppp', {}).get('sb3_capacity_pct', 58)}%")
     st.metric("Sediment Accumulation", f"{sed_pct}%")
-    st.metric("Max Wind Gust", f"{wind} MPH")
+    st.metric("Wind Speed & Direction", f"{wind_speed} MPH {wind_dir}")
     st.metric("Lightning (50mi)", light)
     st.markdown('</div>', unsafe_allow_html=True)
 
