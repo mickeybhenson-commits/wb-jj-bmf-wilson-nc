@@ -53,7 +53,6 @@ wind_speed = site_data.get('crane_safety', {}).get('max_gust', 0)
 light = site_data.get('lightning', {}).get('recent_strikes_50mi', 0)
 last_sync_time = dt.datetime.now().strftime('%H:%M:%S')
 
-# UPDATED TACTICAL SCHEDULE WITH CORRECTED THURSDAY COLOR LOGIC
 forecast_data = [
     {"day": "Mon", "rain": "10%", "amt": "0.00\"", "task": "PRIORITY: Monitor East Perimeter Silt Fences + Clean Basin SB3 (25% Sed)"},
     {"day": "Tue", "rain": "20%", "amt": "0.01\"", "task": "Finalize Infrastructure Prep: Clear all low-point blockages"},
@@ -76,7 +75,7 @@ st.markdown(f"""
             <div class="sync-badge">SYSTEM ACTIVE • UPDATED: {last_sync_time}</div>
         </div>
         <div style="font-size:1.5em; color:#AAA; text-transform:uppercase;">{site_data.get('project_name', 'J&J LMDS - Wilson, NC')}</div>
-        <div style="color:#777;">Wilson, NC | 148.2 Disturbed Acres</div>
+        <div style="color:#777; font-weight:700;">Wilson, NC | 148.2 Disturbed Acres | 35.726, -77.916</div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -92,12 +91,10 @@ with c_main:
     
     st.markdown("<b>Weekly Tactical Priority Schedule:</b>", unsafe_allow_html=True)
     for d in forecast_data:
-        # Thursday Color Shift: Turned from Green to Yellow (#FFAA00)
         if d['day'] == "Mon": task_color = "#FFD700"
-        elif d['day'] == "Thu": task_color = "#FFAA00" # Saturated Warning 
+        elif d['day'] == "Thu": task_color = "#FFAA00"
         elif "STORM" in d['task']: task_color = "#FF4B4B"
         else: task_color = "#00FFCC"
-        
         st.markdown(f"<div style='font-size:0.9em; margin-bottom:6px;'>• <b>{d['day']}</b>: <span style='color:{task_color}; font-weight:700;'>{d['task']}</span> ({d['amt']})</div>", unsafe_allow_html=True)
 
     if light > 0: st.markdown(f'<div class="alert-box" style="border-color:#FFAA00;">⚡ LIGHTNING: {light} strikes detected within 50 miles.</div>', unsafe_allow_html=True)
