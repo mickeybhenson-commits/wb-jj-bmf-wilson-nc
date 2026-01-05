@@ -24,7 +24,8 @@ def apply_universal_command_styling():
         .report-section {{ background: rgba(15, 15, 20, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 25px; margin-bottom: 20px; }}
         .directive-header {{ color: #CC0000; font-weight: 900; text-transform: uppercase; font-size: 0.85em; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }}
         .val-text {{ color: #00FFCC; font-weight: 700; }}
-        .forecast-card {{ text-align: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }}
+        .forecast-card {{ text-align: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.2; }}
+        .temp-box {{ background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.85em; margin: 4px 0; display: inline-block; }}
         </style>
         """, unsafe_allow_html=True)
 
@@ -32,22 +33,16 @@ apply_universal_command_styling()
 
 # --- 2. CORE PROJECT CONSTANTS ---
 SITE_NAME = "Johnson & Johnson Biologics Manufacturing Facility"
-ACRES = 148.2
-COORDS = "35.726, -77.916"
-API = 0.058 # Soil Moisture
-SED_INCHES = 18 # 25% Accumulation
+ACRES, COORDS = 148.2, "35.726, -77.916"
+API, SED_INCHES = 0.058, 18  # 25% Accumulation
 
 # --- 3. HYDROMETRIC ENGINE ---
 def calculate_runoff_gal(precip_inches):
     runoff_ft3 = (0.45 * (precip_inches/12) * (ACRES * 43560))
     return int(runoff_ft3 * 7.48)
 
-hist_report = {
-    "period": "Nov - Dec 2025",
-    "total_rain": "4.12\"",
-    "est_silt_load": "64,800 cu ft",
-    "depth_verify": "17.4 inches"
-}
+# Historical Validation Data
+hist_report = {"period": "Nov-Dec 2025", "total_rain": "4.12\"", "est_silt_load": "64,800 cu ft", "depth_verify": "17.4 inches"}
 
 # --- 4. COMMAND CENTER UI ---
 st.markdown(f"""
@@ -64,52 +59,60 @@ st.markdown(f"""
 c_main, c_metrics = st.columns([2, 1])
 
 with c_main:
-    st.markdown(f'<div class="report-section" style="border-top: 6px solid #0B8A1D;"><div class="directive-header">Field Operational Directive</div><h1 style="color:#0B8A1D; margin:0; font-size:3.5em;">OPTIMAL</h1><p style="font-size:1.3em;">Full grading operations and basin maintenance authorized.</p></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="report-section" style="border-top: 6px solid #0B8A1D;"><div class="directive-header">Field Operational Directive</div><h1 style="color:#0B8A1D; margin:0; font-size:3.5em;">OPTIMAL</h1><p style="font-size:1.3em;">Full grading and basin maintenance authorized.</p></div>', unsafe_allow_html=True)
 
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
-    st.markdown('<div class="directive-header">Historical Sediment Validation Report</div>', unsafe_allow_html=True)
+    st.markdown('<div class="directive-header">Historical Sediment Validation</div>', unsafe_allow_html=True)
     v1, v2, v3 = st.columns(3)
-    v1.markdown(f"**Period**: {hist_report['period']} <br> **Rainfall**: <span class='val-text'>{hist_report['total_rain']}</span>", unsafe_allow_html=True)
-    v2.markdown(f"**Est. Silt Load**: <span class='val-text'>{hist_report['est_silt_load']}</span>", unsafe_allow_html=True)
-    v3.markdown(f"**Modeled Depth**: {hist_report['depth_verify']} <br> <span style='font-size:0.8em; color:#888;'>Spectral Shift (B4/B8A) Confirmed</span>", unsafe_allow_html=True)
+    v1.markdown(f"**Period**: {hist_report['period']} <br> **Rain**: <span class='val-text'>{hist_report['total_rain']}</span>", unsafe_allow_html=True)
+    v2.markdown(f"**Silt Load**: <span class='val-text'>{hist_report['est_silt_load']}</span>", unsafe_allow_html=True)
+    v3.markdown(f"**Depth**: {hist_report['depth_verify']} <br> <span style='font-size:0.75em; color:#888;'>Spectral Shift (B4/B8A) Confirmed</span>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Executive Advisory: Safety & Tactical Priority</div>', unsafe_allow_html=True)
     
+    # Unified Forecast & Priority Data
     forecast_data = [
-        {"day": "Mon", "rain": "10%", "in": "0.00\"", "task": "PRIORITY: Monitor East Perimeter Silt Fences + Clean Basin SB3 (25% Sed)"},
-        {"day": "Tue", "rain": "20%", "in": "0.01\"", "task": "Finalize Infrastructure Prep: Clear all low-point blockages"},
-        {"day": "Wed", "rain": "80%", "in": "0.55\"", "task": "STORM ACTION: Runoff Surge - Mandatory SWPPP Inspection"},
-        {"day": "Thu", "rain": "40%", "in": "0.10\"", "task": "Saturated: Limit Heavy Hauling / Protect Subgrade"},
-        {"day": "Fri", "rain": "10%", "in": "0.00\"", "task": "Drying: Monitor Sediment Trap Recovery"},
-        {"day": "Sat", "rain": "0%", "in": "0.00\"", "task": "Recovery: Resume Standard Mass Grading"},
-        {"day": "Sun", "rain": "0%", "in": "0.00\"", "task": "Stable: All Clear"}
+        {"day": "Mon", "hi": 55, "lo": 29, "rain": "10%", "in": "0.00\"", "task": "PRIORITY: Clean Basin SB3 + Inspect Silt Fences"},
+        {"day": "Tue", "hi": 60, "lo": 41, "rain": "10%", "in": "0.01\"", "task": "Finalize Infrastructure Prep: Clear low-point blockages"},
+        {"day": "Wed", "hi": 67, "lo": 44, "rain": "0%", "in": "0.00\"", "task": "PREP ACTION: Runoff Surge Monitoring (0.55\" Risk)"},
+        {"day": "Thu", "hi": 64, "lo": 43, "rain": "10%", "in": "0.10\"", "task": "Saturated: Limit Heavy Hauling / Protect Subgrade"},
+        {"day": "Fri", "hi": 71, "lo": 48, "rain": "20%", "in": "0.00\"", "task": "Drying: Monitor Sediment Trap Recovery"},
+        {"day": "Sat", "hi": 71, "lo": 53, "rain": "20%", "in": "0.00\"", "task": "Recovery: Resume Standard Mass Grading"},
+        {"day": "Sun", "hi": 53, "lo": 34, "rain": "20%", "in": "0.00\"", "task": "Stable: All Clear"}
     ]
     
     for d in forecast_data:
-        t_color = "#FFD700" if d['day'] == "Mon" else ("#FFAA00" if d['day'] == "Thu" else ("#FF4B4B" if "STORM" in d['task'] else "#00FFCC"))
-        st.markdown(f"<div style='font-size:0.9em; margin-bottom:6px;'>• <b>{d['day']}</b>: <span style='color:{t_color}; font-weight:700;'>{d['task']}</span> ({d['in']})</div>", unsafe_allow_html=True)
+        t_color = "#FFD700" if d['day'] == "Mon" else ("#FF4B4B" if d['hi'] > 70 else "#00FFCC")
+        st.markdown(f"<div style='font-size:0.85em; margin-bottom:4px;'>• <b>{d['day']}</b> ({d['hi']}°/{d['lo']}°): <span style='color:{t_color}; font-weight:700;'>{d['task']}</span></div>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">7-Day Weather Outlook</div>', unsafe_allow_html=True)
     f_cols = st.columns(7)
     for i, day in enumerate(forecast_data):
-        f_cols[i].markdown(f"""<div class="forecast-card"><b>{day['day']}</b><br><span style="color:#00FFCC; font-weight:700;">{day['rain']} / {day['in']}</span></div>""", unsafe_allow_html=True)
+        f_cols[i].markdown(f"""
+            <div class="forecast-card">
+                <b>{day['day']}</b><br>
+                <div class="temp-box">{day['hi']}°/{day['lo']}°</div><br>
+                <span style="color:#00FFCC; font-weight:700; font-size:0.85em;">{day['rain']} / {day['in']}</span>
+            </div>
+        """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with c_metrics:
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Analytical Metrics</div>', unsafe_allow_html=True)
     st.metric("Soil Moisture (API)", API)
-    st.metric("Basin SB3 Capacity", "58%", delta="Critical Window")
+    st.metric(label="Basin SB3 Capacity", value="58%", delta="CRITICAL WINDOW", delta_color="inverse")
     st.metric("Sediment Accumulation", f"{SED_INCHES}\" (25%)")
+    st.metric("Temperature", "54°F", delta="Warmer than yesterday")
+    st.metric("Humidity", "55%", delta="-13%")
     st.metric("NC DEQ NTU Limit", "50 NTU")
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.components.v1.html(f"""<iframe width="100%" height="450" src="https://embed.windy.com/embed2.html?lat=35.726&lon=-77.916&zoom=9&level=surface&overlay=radar&product=radar&calendar=now" frameborder="0" style="border-radius:8px;"></iframe>""", height=460)
 
-# FIXED ADVISORY BLOCK
 wed_gal = calculate_runoff_gal(0.55)
-st.error(f"**Vessel Advisory:** Wednesday's 0.55\" rain will generate ~{wed_gal:,} Gallons of runoff. Filtration vessel must be operational by 06:00 Wed.")
+st.error(f"**Vessel Advisory:** Wednesday's 0.55\" risk will generate ~{wed_gal:,} Gallons. Filtration vessel must be operational by 06:00 Wed.")
