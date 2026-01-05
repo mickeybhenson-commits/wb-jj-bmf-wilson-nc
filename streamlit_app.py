@@ -33,7 +33,7 @@ apply_universal_command_styling()
 
 # --- 2. DATA ENGINE ---
 def load_site_data():
-    site, api = {"project_name": "J&J Wilson"}, 0.0
+    site, api = {"project_name": "Johnson & Johnson Biologics Manufacturing Facility"}, 0.0
     try:
         if Path("data/site_status.json").exists():
             with open("data/site_status.json", "r") as f: site = json.load(f)
@@ -74,7 +74,7 @@ st.markdown(f"""
             <div class="exec-title">Wayne Brothers</div>
             <div class="sync-badge">SYSTEM ACTIVE • UPDATED: {last_sync_time}</div>
         </div>
-        <div style="font-size:1.5em; color:#AAA; text-transform:uppercase;">{site_data.get('project_name', 'J&J LMDS - Wilson, NC')}</div>
+        <div style="font-size:1.5em; color:#AAA; text-transform:uppercase;">Johnson & Johnson Biologics Manufacturing Facility</div>
         <div style="color:#777; font-weight:700;">Wilson, NC | 148.2 Disturbed Acres | 35.726, -77.916</div>
     </div>
 """, unsafe_allow_html=True)
