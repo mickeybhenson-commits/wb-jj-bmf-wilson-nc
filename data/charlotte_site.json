@@ -1,0 +1,19 @@
+{
+  "project_name": "South Blvd - Charlotte",
+  "location": "Charlotte, NC",
+  "last_updated": "2026-01-05 12:00 EST",
+  "swppp": {
+    "risk": "HIGH",
+    "rain_24h": 0.74,
+    "notes": "Rainfall threshold exceeded. Inspection required. Satellite shows breach on western slope."
+  },
+  "concrete": {
+    "temp_low": 42,
+    "blankets_required": false,
+    "notes": "Standard curing conditions."
+  },
+  "crane": {
+    "wind_speed": 12,
+    "status": "GO"
+  }
+}
