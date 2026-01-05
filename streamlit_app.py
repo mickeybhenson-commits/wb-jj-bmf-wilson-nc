@@ -4,7 +4,7 @@ import json
 # --- Page Config ---
 st.set_page_config(page_title="Wayne Brothers | Site Intelligence", layout="wide")
 
-# --- Fixed Custom Theme (HTML) ---
+# --- Custom Theme to Match Your Original Screenshot ---
 st.markdown("""
     <style>
     .main { background-color: #000000; color: #ffffff; }
@@ -29,7 +29,7 @@ except Exception as e:
     st.error("Waiting for site data sync...")
     st.stop()
 
-# --- HEADER (Restored) ---
+# --- HEADER (Restored to Full Specs) ---
 st.write(f"### Wayne Brothers")
 st.title(site.get('project_name', 'SITE PROJECT').upper())
 st.write(f"📍 {site.get('location')} | {site.get('acreage')} | {site.get('coords')}")
@@ -37,7 +37,7 @@ st.markdown(f"<div style='text-align: right; color: #00ff00;'>SYSTEM ACTIVE • 
 
 st.divider()
 
-# --- MAIN DASHBOARD (Restored Layout) ---
+# --- MAIN DASHBOARD BODY ---
 col_main, col_metrics = st.columns([2, 1])
 
 with col_main:
@@ -60,13 +60,19 @@ with col_main:
     cols = [f_col1, f_col2, f_col3, f_col4, f_col5]
     
     for i, day in enumerate(forecasts):
-        with cols[i]:
-            st.metric(day['day'], f"{day['temp']}°", f"{day['rain']}\"")
+        if i < len(cols):
+            with cols[i]:
+                st.metric(day['day'], f"{day['temp']}°", f"{day['rain']}\"")
 
-    # 3. Executive Advisory
+    # 3. Executive Advisory: Safety & Tactical Priority (Restored)
     st.write("")
     st.caption("EXECUTIVE ADVISORY: SAFETY & TACTICAL PRIORITY")
-    st.info(site.get('tactical_schedule', 'No current schedule items.'))
+    st.markdown(f"""
+        <div style="background-color: #000000; padding: 10px; border: 1px solid #333333;">
+            <p><strong>Weekly Tactical Priority Schedule:</strong></p>
+            {site.get('tactical_schedule', '• Loading schedule...')}
+        </div>
+    """, unsafe_allow_html=True)
 
 with col_metrics:
     # 4. Analytical Metrics (Restored)
@@ -74,7 +80,8 @@ with col_metrics:
     st.metric("Soil Moisture (API)", site.get('soil_moisture', '0.000'))
     st.metric("Basin SB3 Capacity", site.get('basin_capacity', '0%'))
     st.metric("Sediment Accumulation", site.get('sediment', '0%'))
-    st.metric("Temperature / Humidity", f"{site['concrete']['temp_low']}°F / {site.get('humidity', '0%')}")
+    st.metric("Temperature", f"{site['concrete']['temp_low']}°F")
+    st.metric("Humidity", site.get('humidity', '0%'))
     
     # Wind Metric with Caution Logic
     wind = site['crane'].get('wind_speed', 0)
