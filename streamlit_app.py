@@ -34,22 +34,20 @@ apply_universal_command_styling()
 # --- 2. CORE PROJECT CONSTANTS ---
 SITE_NAME = "Johnson & Johnson Biologics Manufacturing Facility"
 ACRES, COORDS = 148.2, "35.726, -77.916"
-API, SED_INCHES = 0.058, 18  # 25% Accumulation
-
-# --- 3. HYDROMETRIC ENGINE ---
-def calculate_runoff_gal(precip_inches):
-    runoff_ft3 = (0.45 * (precip_inches/12) * (ACRES * 43560))
-    return int(runoff_ft3 * 7.48)
+API, SED_INCHES = 0.058, 18 
 
 # Historical Validation Data
 hist_report = {"period": "Nov-Dec 2025", "total_rain": "4.12\"", "est_silt_load": "64,800 cu ft", "depth_verify": "17.4 inches"}
 
-# --- 4. COMMAND CENTER UI ---
+# --- 3. COMMAND CENTER UI ---
+# TIME LAYOUT UPDATED TO HH:MM
+current_time = dt.datetime.now().strftime('%H:%M')
+
 st.markdown(f"""
     <div class="exec-header">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div class="exec-title">Wayne Brothers</div>
-            <div class="sync-badge">SYSTEM ACTIVE • UPDATED: {dt.datetime.now().strftime('%H:%M:%S')}</div>
+            <div class="sync-badge">SYSTEM ACTIVE • UPDATED: {current_time}</div>
         </div>
         <div style="font-size:1.5em; color:#AAA; text-transform:uppercase;">{SITE_NAME}</div>
         <div style="color:#777; font-weight:700;">Wilson, NC | {ACRES} Disturbed Acres | {COORDS}</div>
@@ -72,7 +70,6 @@ with c_main:
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Executive Advisory: Safety & Tactical Priority</div>', unsafe_allow_html=True)
     
-    # Unified Forecast & Priority Data
     forecast_data = [
         {"day": "Mon", "hi": 55, "lo": 29, "rain": "10%", "in": "0.00\"", "task": "PRIORITY: Clean Basin SB3 + Inspect Silt Fences"},
         {"day": "Tue", "hi": 60, "lo": 41, "rain": "10%", "in": "0.01\"", "task": "Finalize Infrastructure Prep: Clear low-point blockages"},
@@ -105,7 +102,10 @@ with c_metrics:
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Analytical Metrics</div>', unsafe_allow_html=True)
     st.metric("Soil Moisture (API)", API)
+    
+    # "CRITICAL WINDOW" preserved in Red via inverse logic
     st.metric(label="Basin SB3 Capacity", value="58%", delta="CRITICAL WINDOW", delta_color="inverse")
+    
     st.metric("Sediment Accumulation", f"{SED_INCHES}\" (25%)")
     st.metric("Temperature", "54°F", delta="Warmer than yesterday")
     st.metric("Humidity", "55%", delta="-13%")
@@ -113,6 +113,3 @@ with c_metrics:
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.components.v1.html(f"""<iframe width="100%" height="450" src="https://embed.windy.com/embed2.html?lat=35.726&lon=-77.916&zoom=9&level=surface&overlay=radar&product=radar&calendar=now" frameborder="0" style="border-radius:8px;"></iframe>""", height=460)
-
-wed_gal = calculate_runoff_gal(0.55)
-st.error(f"**Vessel Advisory:** Wednesday's 0.55\" risk will generate ~{wed_gal:,} Gallons. Filtration vessel must be operational by 06:00 Wed.")
