@@ -7,7 +7,7 @@ from streamlit_autorefresh import st_autorefresh
 
 # --- 1. ARCHITECTURAL CONFIG & PREMIUM STYLING ---
 st.set_page_config(page_title="Wayne Brothers | Universal Command", layout="wide")
-st_autorefresh(interval=300000, key="datarefresh") 
+st_autorefresh(interval=300000, key="datarefresh") # 5-Min Sync
 
 def apply_universal_command_styling():
     bg_url = "https://raw.githubusercontent.com/mickeybhenson-commits/J-J-LMDS-WILSON-NC/main/image_12e160.png"
@@ -40,10 +40,10 @@ current_dt = dt.datetime.now()
 current_time = current_dt.strftime('%H:%M')
 current_day = current_dt.strftime('%a') 
 
-# Updated Tactical Logic: Monday shifted to MAINTENANCE (YELLOW)
+# Updated Tactical Logic: Tuesday now mirrors Monday (MAINTENANCE/YELLOW)
 tactical_map = {
     "Mon": {"status": "MAINTENANCE", "color": "#FFFF00", "hi": 55, "lo": 29, "pop": "10%", "in": "0.00\"", "task": "PRIORITY: Clean Basin SB3 + Inspect Silt Fences"},
-    "Tue": {"status": "OPTIMAL", "color": "#00FFCC", "hi": 60, "lo": 41, "pop": "10%", "in": "0.01\"", "task": "Finalize Infrastructure Prep: Clear low-point blockages"},
+    "Tue": {"status": "MAINTENANCE", "color": "#FFFF00", "hi": 60, "lo": 41, "pop": "10%", "in": "0.01\"", "task": "PRE-STORM: Deploy Filtration Vessel + Armor Low Points"},
     "Wed": {"status": "CRITICAL", "color": "#FF0000", "hi": 67, "lo": 44, "pop": "80%", "in": "0.55\"", "task": "STORM ACTION: Runoff Surge Monitoring (High Risk)"},
     "Thu": {"status": "RESTRICTED", "color": "#FF8C00", "hi": 64, "lo": 43, "pop": "40%", "in": "0.10\"", "task": "Saturated: Limit Heavy Hauling / Protect Subgrade"},
     "Fri": {"status": "CAUTION", "color": "#FFFF00", "hi": 71, "lo": 48, "pop": "20%", "in": "0.00\"", "task": "Drying: Monitor Sediment Trap Recovery"},
@@ -67,7 +67,7 @@ st.markdown(f"""
 c_main, c_metrics = st.columns([2, 1])
 
 with c_main:
-    # 1. DYNAMIC FIELD OPERATIONAL DIRECTIVE (UPDATED TO MAINTENANCE)
+    # 1. DYNAMIC FIELD OPERATIONAL DIRECTIVE (LOCKS TO DAILY ADVISORY)
     st.markdown(f"""
         <div class="report-section" style="border-top: 8px solid {today['color']};">
             <div class="directive-header">Field Operational Directive • {current_day.upper()} VALIDATION</div>
@@ -76,14 +76,14 @@ with c_main:
         </div>
     """, unsafe_allow_html=True)
 
-    # 2. EXECUTIVE ADVISORY
+    # 2. EXECUTIVE ADVISORY: TACTICAL PRIORITY
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Executive Advisory: Safety & Tactical Priority</div>', unsafe_allow_html=True)
     for day_key, d in tactical_map.items():
         st.markdown(f"<div style='font-size:0.85em; margin-bottom:4px;'>• <b>{day_key}</b> ({d['hi']}°/{d['lo']}°): <span style='color:{d['color']}; font-weight:700;'>{d['task']}</span></div>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. 7-DAY OUTLOOK TILES
+    # 3. 7-DAY WEATHER OUTLOOK
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">7-Day Weather Outlook (NWS/Meteo Hybrid)</div>', unsafe_allow_html=True)
     f_cols = st.columns(7)
@@ -99,14 +99,16 @@ with c_main:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with c_metrics:
-    # 4. ANALYTICAL METRICS
+    # 4. ANALYTICAL METRICS (PROMINENT SIDEBAR)
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Analytical Metrics</div>', unsafe_allow_html=True)
     st.metric("Soil Moisture (API)", API)
+    # Red status via inverse logic
     st.metric(label="Basin SB3 Capacity", value="58%", delta="CRITICAL WINDOW", delta_color="inverse")
     st.metric("Wind Speed", "7 MPH", delta="S Direction")
     st.metric("Temperature", "54°F")
     st.metric("Humidity", "55%")
+    st.metric("NC DEQ NTU Limit", "50 NTU")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # 5. RADAR AT BOTTOM
