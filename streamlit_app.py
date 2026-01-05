@@ -27,9 +27,10 @@ def apply_universal_command_styling():
         .sync-badge {{ background: rgba(255, 255, 255, 0.1); color: #00FFCC; padding: 5px 12px; border-radius: 50px; font-size: 0.8em; font-weight: 700; border: 1px solid #00FFCC; }}
         .report-section {{ background: rgba(15, 15, 20, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 25px; margin-bottom: 20px; }}
         .directive-header {{ color: #CC0000; font-weight: 900; text-transform: uppercase; font-size: 0.85em; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }}
-        .forecast-card {{ text-align: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.1; min-height: 140px; }}
+        .forecast-card {{ text-align: center; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); line-height: 1.1; min-height: 160px; }}
         .temp-box {{ background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.85em; margin: 4px 0; display: inline-block; }}
         .precip-box {{ color: #00FFCC; font-weight: 700; font-size: 0.85em; margin-top: 4px; }}
+        .humid-box {{ color: #AAA; font-size: 0.75em; font-weight: 600; margin-top: 2px; }}
         </style>
         """, unsafe_allow_html=True)
 
@@ -39,21 +40,21 @@ apply_universal_command_styling()
 PROJECT_ID = "WAYNE BROTHERS" 
 CLIENT_NAME = "Johnson & Johnson Biologics Manufacturing Facility"
 ACRES, COORDS = 148.2, "35.726, -77.916"
-API, SED_INCHES = 0.058, 18 
+API = 0.058
 
 current_dt = dt.datetime.now()
 current_time = current_dt.strftime('%H:%M')
 current_day = current_dt.strftime('%a') 
 
-# Locked Tactical Logic: Mon/Tue Maintenance Focus
+# Updated Tactical Logic: Added Humidity % for Civil & Concrete Planning
 tactical_map = {
-    "Mon": {"status": "MAINTENANCE", "color": "#FFFF00", "hi": 55, "lo": 29, "pop": "10%", "in": "0.00\"", "task": "PRIORITY: Clean Basin SB3 + Inspect Silt Fences"},
-    "Tue": {"status": "MAINTENANCE", "color": "#FFFF00", "hi": 60, "lo": 41, "pop": "10%", "in": "0.01\"", "task": "PRIORITY: Clean Basin SB3 + Inspect Silt Fences"},
-    "Wed": {"status": "CRITICAL", "color": "#FF0000", "hi": 67, "lo": 44, "pop": "80%", "in": "0.55\"", "task": "STORM ACTION: High Runoff Surge Monitoring"},
-    "Thu": {"status": "RESTRICTED", "color": "#FF8C00", "hi": 64, "lo": 43, "pop": "40%", "in": "0.10\"", "task": "Saturated: Limit Heavy Hauling / Protect Subgrade"},
-    "Fri": {"status": "CAUTION", "color": "#FFFF00", "hi": 71, "lo": 48, "pop": "20%", "in": "0.00\"", "task": "Drying: Monitor Sediment Trap Recovery"},
-    "Sat": {"status": "RECOVERY", "color": "#00FF00", "hi": 71, "lo": 53, "pop": "20%", "in": "0.00\"", "task": "Recovery: Resume Standard Mass Grading"},
-    "Sun": {"status": "STABLE", "color": "#00FFCC", "hi": 53, "lo": 34, "pop": "20%", "in": "0.00\"", "task": "Stable: Site Security Check"}
+    "Mon": {"status": "MAINTENANCE", "color": "#FFFF00", "hi": 55, "lo": 29, "pop": "10%", "in": "0.00\"", "hum": "55%", "task": "PRIORITY: Clean Basin SB3 + Inspect Silt Fences"},
+    "Tue": {"status": "MAINTENANCE", "color": "#FFFF00", "hi": 60, "lo": 41, "pop": "10%", "in": "0.01\"", "hum": "58%", "task": "PRIORITY: Clean Basin SB3 + Inspect Silt Fences"},
+    "Wed": {"status": "CRITICAL", "color": "#FF0000", "hi": 67, "lo": 44, "pop": "80%", "in": "0.55\"", "hum": "72%", "task": "STORM ACTION: High Runoff Surge Monitoring"},
+    "Thu": {"status": "RESTRICTED", "color": "#FF8C00", "hi": 64, "lo": 43, "pop": "40%", "in": "0.10\"", "hum": "68%", "task": "Saturated: Limit Heavy Hauling / Protect Subgrade"},
+    "Fri": {"status": "CAUTION", "color": "#FFFF00", "hi": 71, "lo": 48, "pop": "20%", "in": "0.00\"", "hum": "60%", "task": "Drying: Monitor Sediment Trap Recovery"},
+    "Sat": {"status": "RECOVERY", "color": "#00FF00", "hi": 71, "lo": 53, "pop": "20%", "in": "0.00\"", "hum": "55%", "task": "Recovery: Resume Standard Mass Grading"},
+    "Sun": {"status": "STABLE", "color": "#00FFCC", "hi": 53, "lo": 34, "pop": "20%", "in": "0.00\"", "hum": "50%", "task": "Stable: Site Security Check"}
 }
 today = tactical_map.get(current_day, tactical_map["Sun"])
 
@@ -72,6 +73,7 @@ st.markdown(f"""
 c_main, c_metrics = st.columns([2, 1])
 
 with c_main:
+    # 1. FIELD OPERATIONAL DIRECTIVE
     st.markdown(f"""
         <div class="report-section" style="border-top: 8px solid {today['color']};">
             <div class="directive-header">Field Operational Directive • {current_day.upper()} VALIDATION</div>
@@ -80,12 +82,14 @@ with c_main:
         </div>
     """, unsafe_allow_html=True)
 
+    # 2. EXECUTIVE ADVISORY
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Executive Advisory: Safety & Tactical Priority</div>', unsafe_allow_html=True)
     for day_key, d in tactical_map.items():
-        st.markdown(f"<div style='font-size:0.85em; margin-bottom:4px;'>• <b>{day_key}</b> ({d['hi']}°/{d['lo']}°): <span style='color:{d['color']}; font-weight:700;'>{d['task']}</span></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:0.85em; margin-bottom:4px;'>• <b>{day_key}</b>: <span style='color:{d['color']}; font-weight:700;'>{d['task']}</span> (Hum: {d['hum']})</div>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # 3. 7-DAY WEATHER OUTLOOK (NWS/METEO HYBRID)
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">7-Day Weather Outlook</div>', unsafe_allow_html=True)
     f_cols = st.columns(7)
@@ -96,11 +100,13 @@ with c_main:
                 <div class="temp-box">{d['hi']}°/{d['lo']}°</div><br>
                 <div class="precip-box">{d['pop']} Prob</div>
                 <div style="font-size: 0.8em; color: #AAA;">{d['in']} Total</div>
+                <div class="humid-box">Hum: {d['hum']}</div>
             </div>
         """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with c_metrics:
+    # 4. ANALYTICAL METRICS
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Civil & Concrete Metrics</div>', unsafe_allow_html=True)
     st.metric("Soil Moisture (API)", API)
@@ -111,9 +117,8 @@ with c_metrics:
     st.metric("NC DEQ NTU Limit", "50 NTU")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# 5. SURVEILLANCE RADAR (AUTO-LOOP ENABLED)
+# 5. SURVEILLANCE RADAR
 st.markdown('<div class="report-section">', unsafe_allow_html=True)
 st.markdown('<div class="directive-header">Live Surveillance Radar (Auto-Loop)</div>', unsafe_allow_html=True)
-# Added &radarLoop=1 to the source URL to start movement immediately
 st.components.v1.html(f"""<iframe width="100%" height="450" src="https://embed.windy.com/embed2.html?lat=35.726&lon=-77.916&zoom=9&level=surface&overlay=radar&radarLoop=1" frameborder="0" style="border-radius:8px;"></iframe>""", height=460)
 st.markdown('</div>', unsafe_allow_html=True)
