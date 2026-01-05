@@ -26,7 +26,6 @@ def apply_universal_command_styling():
         .alert-box {{ border-left: 5px solid #CC0000; padding: 15px; margin-bottom: 15px; background: rgba(204, 0, 0, 0.1); font-weight: 600; color: #FFD6D6; }}
         .optimal-alert {{ border-left: 5px solid #0B8A1D; padding: 15px; margin-bottom: 15px; background: rgba(11, 138, 29, 0.1); font-weight: 600; color: #D6FFD6; }}
         .forecast-card {{ text-align: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }}
-        .amt-text {{ color: #AAAAAA; font-size: 0.9em; font-weight: 400; margin-top: 4px; display: block; }}
         </style>
         """, unsafe_allow_html=True)
 
@@ -54,14 +53,13 @@ wind_speed = site_data.get('crane_safety', {}).get('max_gust', 0)
 light = site_data.get('lightning', {}).get('recent_strikes_50mi', 0)
 last_sync_time = dt.datetime.now().strftime('%H:%M:%S')
 
-# 7-DAY FORECAST DATA WITH TACTICAL PRIORITIES
 forecast_data = [
-    {"day": "Mon", "rain": "10%", "amt": "0.00\"", "task": "Full Grading: Maximize Hauling"},
-    {"day": "Tue", "rain": "20%", "amt": "0.01\"", "task": "Prep: Finalize Basin SB3 Clean-out"},
-    {"day": "Wed", "rain": "80%", "amt": "0.55\"", "task": "Action: High Runoff Risk / Inspect Silt Fence"},
-    {"day": "Thu", "rain": "40%", "amt": "0.10\"", "task": "Saturated: Limit Heavy Hauling"},
-    {"day": "Fri", "rain": "10%", "amt": "0.00\"", "task": "Drying: Monitor Sediment Trap Levels"},
-    {"day": "Sat", "rain": "0%", "amt": "0.00\"", "task": "Recovery: Resume Standard Operations"},
+    {"day": "Mon", "rain": "10%", "amt": "0.00\"", "task": "PRIORITY: Monitor East Perimeter Silt Fences + Clean Basin SB3 (25% Sed)"},
+    {"day": "Tue", "rain": "20%", "amt": "0.01\"", "task": "Finalize Infrastructure Prep: Clear all low-point blockages"},
+    {"day": "Wed", "rain": "80%", "amt": "0.55\"", "task": "STORM ACTION: Runoff Surge - Mandatory SWPPP Inspection"},
+    {"day": "Thu", "rain": "40%", "amt": "0.10\"", "task": "Saturated: Limit Heavy Hauling / Protect Subgrade"},
+    {"day": "Fri", "rain": "10%", "amt": "0.00\"", "task": "Drying: Monitor Sediment Trap Recovery"},
+    {"day": "Sat", "rain": "0%", "amt": "0.00\"", "task": "Recovery: Resume Standard Mass Grading"},
     {"day": "Sun", "rain": "0%", "amt": "0.00\"", "task": "Stable: All Clear"}
 ]
 
@@ -87,22 +85,17 @@ with c_main:
     # 1. FIELD OPERATIONAL DIRECTIVE
     st.markdown(f'<div class="report-section" style="border-top: 6px solid {s_color};"><div class="directive-header">Field Operational Directive</div><h1 style="color:{s_color}; margin:0; font-size:3.5em;">{status}</h1><p style="font-size:1.3em;">{s_msg}</p></div>', unsafe_allow_html=True)
 
-    # 2. EXECUTIVE ADVISORY & TACTICAL SCHEDULE
+    # 2. EXECUTIVE ADVISORY & TACTICAL SCHEDULE (LABELS REMOVED)
     st.markdown('<div class="report-section">', unsafe_allow_html=True)
     st.markdown('<div class="directive-header">Executive Advisory: Safety & Tactical Priority</div>', unsafe_allow_html=True)
     
-    # Restored Silt Fence Warning
-    st.markdown(f'<div class="alert-box" style="border-color:#FFAA00;">⚠️ EROSION CONTROL: Monitoring stress at East Perimeter low points.</div>', unsafe_allow_html=True)
-    
-    # Dynamic Tactical Schedule for the Week
-    st.markdown("<b>Tactical Site Priority Daily Schedule:</b>", unsafe_allow_html=True)
+    st.markdown("<b>Weekly Tactical Priority Schedule:</b>", unsafe_allow_html=True)
     for d in forecast_data:
-        task_color = "#00FFCC" if "Full" in d['task'] or "Recovery" in d['task'] else "#FFAA00"
-        if "Action" in d['task']: task_color = "#FF4B4B"
-        st.markdown(f"<div style='font-size:0.9em; margin-bottom:4px;'>• <b>{d['day']}</b>: <span style='color:{task_color};'>{d['task']}</span> ({d['amt']})</div>", unsafe_allow_html=True)
+        task_color = "#FFD700" if d['day'] == "Mon" else ("#FF4B4B" if "STORM" in d['task'] else "#00FFCC")
+        st.markdown(f"<div style='font-size:0.9em; margin-bottom:6px;'>• <b>{d['day']}</b>: <span style='color:{task_color}; font-weight:700;'>{d['task']}</span> ({d['amt']})</div>", unsafe_allow_html=True)
 
     if light > 0: st.markdown(f'<div class="alert-box" style="border-color:#FFAA00;">⚡ LIGHTNING: {light} strikes detected within 50 miles.</div>', unsafe_allow_html=True)
-    if sed_pct >= 25: st.markdown(f'<div class="optimal-alert">CMD DIRECTIVE: Basin SB3 at {sed_pct}% sediment. Status {status}. Clean basin immediately while dry.</div>', unsafe_allow_html=True)
+    if sed_pct >= 25: st.markdown(f'<div class="optimal-alert">Basin SB3 is at {sed_pct}% sediment. Clean basin immediately while status is {status}.</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # 3. 7-DAY RAIN OUTLOOK
@@ -110,13 +103,7 @@ with c_main:
     st.markdown('<div class="directive-header">7-Day Rain Outlook</div>', unsafe_allow_html=True)
     f_cols = st.columns(7)
     for i, day in enumerate(forecast_data):
-        f_cols[i].markdown(f"""
-            <div class="forecast-card">
-                <b>{day['day']}</b><br>
-                <span style="color:#00FFCC; font-size:1.3em; font-weight:700;">{day['rain']}</span><br>
-                <span class="amt-text">{day['amt']}</span>
-            </div>
-        """, unsafe_allow_html=True)
+        f_cols[i].markdown(f"""<div class="forecast-card"><b>{day['day']}</b><br><span style="color:#00FFCC; font-size:1.3em; font-weight:700;">{day['rain']}</span><br><span style='color:#AAA; font-size:0.9em;'>{day['amt']}</span></div>""", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # 4. CONTINUOUS LOOP RADAR
