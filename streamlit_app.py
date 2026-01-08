@@ -106,7 +106,7 @@ with c_main:
     st.markdown('</div>', unsafe_allow_html=True)
 
     # 3. 7-Day Weather Outlook
-    st.markdown('<div class="report-section"><div class="directive-header">7-Day Weather Outlook (AccuWeather Forecast)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="report-section"><div class="directive-header">7-Day Weather Outlook (Forecast)</div>', unsafe_allow_html=True)
     f_cols = st.columns(7)
     for i, (day_key, d) in enumerate(tactical_map.items()):
         f_cols[i].markdown(f"""
